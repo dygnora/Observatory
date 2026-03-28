@@ -53,6 +53,12 @@ const handlePlanetClick = (planetId) => {
     gsap.killTweensOf('#orbit-earth')
     gsap.killTweensOf('#wrapper-earth')
 
+    // Hapus class atau atur transition ke none agar tidak bentrok dengan GSAP (penyebab lag utama)
+    const earthWrapper = document.getElementById('wrapper-earth')
+    if (earthWrapper) {
+      earthWrapper.style.transition = 'none'
+    }
+
     // Posisikan Bumi di depan lapisan orbit lain
     gsap.set('#wrapper-earth', { zIndex: 9999 })
 
@@ -60,7 +66,8 @@ const handlePlanetClick = (planetId) => {
     gsap.to('#wrapper-earth', {
       scale: 100,
       duration: 1.5,
-      ease: 'power2.inOut'
+      ease: 'power2.inOut',
+      force3D: true // Paksa akselerasi GPU agar tidak lag
     })
 
     // Pudarkan elemen tata surya yang lainnya
