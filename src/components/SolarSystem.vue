@@ -114,6 +114,7 @@ onMounted(() => {
   position: absolute;
   border: 1px dashed rgba(51, 65, 85, 0.5); 
   border-radius: 50%;
+  pointer-events: none; /* Izinkan pointer tembus ke Bumi */
 }
 
 .orbit-container {

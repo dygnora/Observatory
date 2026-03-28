@@ -45,7 +45,7 @@
       <svg viewBox="0 0 400 400" class="earth-canvas">
         <circle cx="200" cy="200" :r="160 + (store.atmosphere * 0.4)" class="atmosphere-glow" />
         
-        <circle id="earth-core" cx="200" cy="200" r="160" fill="#22c55e" />
+        <circle id="earth-core" cx="200" cy="200" r="160" :fill="currentEarthColor" class="earth-core-color" />
       </svg>
     </div>
 
@@ -53,8 +53,7 @@
 </template>
 
 <script setup>
-import { watch, computed } from 'vue'
-import gsap from 'gsap'
+import { computed } from 'vue'
 import { useSimulationStore } from '../stores/simulation'
 
 const store = useSimulationStore()
@@ -75,14 +74,7 @@ const colorMap = {
   'HABITABLE': '#22c55e' // Hijau Kehidupan
 }
 
-// GSAP WATCHER: Pantau perubahan status, lalu animasikan warna SVG-nya
-watch(() => store.earthCondition, (newStatus) => {
-  gsap.to("#earth-core", {
-    fill: colorMap[newStatus],
-    duration: 1.5, // Transisi 1.5 detik yang sangat halus
-    ease: "power2.inOut"
-  })
-}, { immediate: true }) // immediate: true agar warna langsung teraplikasi saat halaman dibuka
+const currentEarthColor = computed(() => colorMap[store.earthCondition])
 
 </script>
 
@@ -201,5 +193,8 @@ watch(() => store.earthCondition, (newStatus) => {
   fill: #f8fafc;
   opacity: 0.05; /* Efek atmosfer tipis di pinggiran bumi */
   transition: r 0.3s ease; /* Animasikan besaran atmosfer */
+}
+.earth-core-color {
+  transition: fill 1.5s ease-in-out;
 }
 </style>
