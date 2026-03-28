@@ -42,17 +42,18 @@
     </div>
 
     <div class="visual-panel">
-      <svg viewBox="0 0 400 400" class="earth-canvas">
-        <circle cx="200" cy="200" :r="160 + (store.atmosphere * 0.4)" class="atmosphere-glow" />
+      <div class="earth-wrapper">
+        <svg viewBox="0 0 400 400" class="earth-canvas">
+          <circle cx="200" cy="200" :r="160 + (store.atmosphere * 0.4)" class="atmosphere-glow" />
+        </svg>
         
-        <image 
-          x="40" y="40" 
-          width="320" height="320" 
-          :href="getImageUrl('earth')" 
-          class="earth-core-color"
+        <img 
+          :src="getImageUrl('earth')" 
+          class="earth-core-img"
           :style="{ filter: currentEarthFilter }" 
+          alt="Terra"
         />
-      </svg>
+      </div>
     </div>
 
   </div>
@@ -195,17 +196,28 @@ const currentEarthFilter = computed(() => filterMap[store.earthCondition])
   align-items: center;
   position: relative;
 }
-.earth-canvas {
+.earth-wrapper {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   width: 100%;
   max-width: 600px;
   filter: drop-shadow(0 0 50px rgba(0,0,0,0.5));
+}
+.earth-canvas {
+  width: 100%;
+  position: absolute;
+  z-index: 1;
+}
+.earth-core-img {
+  width: 80%; /* Match existing 320px diameter on 400px viewbox (80%) */
+  z-index: 2;
+  transition: filter 1.5s ease;
 }
 .atmosphere-glow {
   fill: #f8fafc;
   opacity: 0.05; /* Efek atmosfer tipis di pinggiran bumi */
   transition: r 0.3s ease; /* Animasikan besaran atmosfer */
-}
-.earth-core-color {
-  transition: filter 1.5s ease;
 }
 </style>
