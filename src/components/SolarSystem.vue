@@ -49,7 +49,31 @@ const getImageUrl = (name) => {
 // INI FUNGSI YANG HILANG SEBELUMNYA
 const handlePlanetClick = (planetId) => {
   if (planetId === 'earth') {
-    store.currentView = 'earth'
+    // Hentikan animasi rotasi Bumi agar berhenti bergerak
+    gsap.killTweensOf('#orbit-earth')
+    gsap.killTweensOf('#wrapper-earth')
+
+    // Posisikan Bumi di depan lapisan orbit lain
+    gsap.set('#wrapper-earth', { zIndex: 9999 })
+
+    // Animasikan Bumi membesar drastis (Zoom in)
+    gsap.to('#wrapper-earth', {
+      scale: 100,
+      duration: 1.5,
+      ease: 'power2.inOut'
+    })
+
+    // Pudarkan elemen tata surya yang lainnya
+    gsap.to('.orbit-path, .orbit-container:not(#orbit-earth), .sun-asset, .hint', {
+      opacity: 0,
+      duration: 1,
+      ease: 'power2.inOut'
+    })
+
+    // Pindah ke simulator setelah animasi zoom hampir selesai
+    setTimeout(() => {
+      store.currentView = 'earth'
+    }, 1200)
   } else {
     console.log(`Simulasi untuk ${planetId} belum tersedia.`)
   }

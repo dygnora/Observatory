@@ -45,7 +45,13 @@
       <svg viewBox="0 0 400 400" class="earth-canvas">
         <circle cx="200" cy="200" :r="160 + (store.atmosphere * 0.4)" class="atmosphere-glow" />
         
-        <circle id="earth-core" cx="200" cy="200" r="160" :fill="currentEarthColor" class="earth-core-color" />
+        <image 
+          x="40" y="40" 
+          width="320" height="320" 
+          :href="getImageUrl('earth')" 
+          class="earth-core-color"
+          :style="{ filter: currentEarthFilter }" 
+        />
       </svg>
     </div>
 
@@ -65,16 +71,21 @@ const tempColor = computed(() => {
   return 'text-green'
 })
 
-// MAPPING WARNA BUMI BERDASARKAN STATUS
-const colorMap = {
-  'FROZEN': '#93c5fd',   // Biru Es
-  'SCORCHED': '#ef4444', // Merah Panas
-  'BARREN': '#d97706',   // Coklat Kering
-  'OCEANIC': '#1d4ed8',  // Biru Laut Dalam
-  'HABITABLE': '#22c55e' // Hijau Kehidupan
+// Fungsi meresolve path ke image SVG
+const getImageUrl = (name) => {
+  return new URL(`../assets/${name}.svg`, import.meta.url).href
 }
 
-const currentEarthColor = computed(() => colorMap[store.earthCondition])
+// MAPPING FILTER BUMI BERDASARKAN STATUS
+const filterMap = {
+  'FROZEN': 'sepia(1) hue-rotate(180deg) saturate(2) brightness(1.2)', // Biru Es
+  'SCORCHED': 'sepia(1) hue-rotate(-50deg) saturate(3) brightness(0.8)', // Merah Panas
+  'BARREN': 'sepia(1) hue-rotate(10deg) saturate(2) brightness(0.9)', // Coklat Kering
+  'OCEANIC': 'sepia(1) hue-rotate(200deg) saturate(3) brightness(0.8)', // Biru Laut Dalam
+  'HABITABLE': 'none' // Warna Asli
+}
+
+const currentEarthFilter = computed(() => filterMap[store.earthCondition])
 
 </script>
 
@@ -195,6 +206,6 @@ const currentEarthColor = computed(() => colorMap[store.earthCondition])
   transition: r 0.3s ease; /* Animasikan besaran atmosfer */
 }
 .earth-core-color {
-  transition: fill 1.5s ease-in-out;
+  transition: filter 1.5s ease;
 }
 </style>

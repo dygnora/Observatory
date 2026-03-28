@@ -1,7 +1,9 @@
 <template>
   <main class="app-wrapper">
-    <SolarSystem v-if="store.currentView === 'solar'" />
-    <EarthView v-else />
+    <transition name="fade" mode="out-in">
+      <SolarSystem v-if="store.currentView === 'solar'" />
+      <EarthView v-else />
+    </transition>
   </main>
 </template>
 
@@ -25,5 +27,16 @@ body {
 .app-wrapper {
   width: 100vw;
   height: 100vh;
+}
+
+/* Transisi antara SolarSystem dan EarthView */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 1s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>
