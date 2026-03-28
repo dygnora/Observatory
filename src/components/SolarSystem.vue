@@ -1,0 +1,171 @@
+<template>
+  <div class="universe">
+    
+    <img src="../assets/sun.svg" alt="Matahari" class="sun-asset" />
+
+    <template v-for="planet in planets" :key="planet.id">
+      
+      <div class="orbit-path" :style="{ width: planet.distance + 'px', height: planet.distance + 'px' }"></div>
+
+      <div 
+        class="orbit-container" 
+        :id="'orbit-' + planet.id"
+        :style="{ width: planet.distance + 'px', height: planet.distance + 'px' }"
+      >
+        <div 
+          class="planet-wrapper" 
+          :id="'wrapper-' + planet.id"
+          @click="handlePlanetClick(planet.id)"
+          :class="{ 'clickable-earth': planet.id === 'earth' }"
+        >
+          <img 
+            :src="getImageUrl(planet.id)" 
+            :alt="planet.label" 
+            class="planet-asset"
+            :style="{ width: planet.size + 'px', height: planet.size + 'px' }"
+          />
+          <span class="planet-label">{{ planet.label.toUpperCase() }}</span>
+        </div>
+      </div>
+
+    </template>
+
+    <div class="hint">[ KLIK BUMI UNTUK MASUK KE SIMULASI ]</div>
+  </div>
+</template>
+
+<script setup>
+import { onMounted } from 'vue'
+import gsap from 'gsap'
+import { useSimulationStore } from '../stores/simulation'
+
+const store = useSimulationStore()
+
+// Fungsi untuk meload image SVG
+const getImageUrl = (name) => {
+  return new URL(`../assets/${name}.svg`, import.meta.url).href
+}
+
+// INI FUNGSI YANG HILANG SEBELUMNYA
+const handlePlanetClick = (planetId) => {
+  if (planetId === 'earth') {
+    store.currentView = 'earth'
+  } else {
+    console.log(`Simulasi untuk ${planetId} belum tersedia.`)
+  }
+}
+
+const EARTH_PERIOD = 365
+const BASE_SPEED = 15
+
+// Data planet: 'id' untuk nama file, 'label' untuk teks tampilan
+const planets = [
+  { id: 'mercury', label: 'Merkurius', distance: 140, size: 20, period: 88 },
+  { id: 'venus', label: 'Venus', distance: 220, size: 30, period: 225 },
+  { id: 'earth', label: 'Bumi', distance: 300, size: 35, period: 365 },
+  { id: 'mars', label: 'Mars', distance: 380, size: 25, period: 687 },
+  { id: 'jupiter', label: 'Jupiter', distance: 540, size: 70, period: 4333 },
+  { id: 'saturn', label: 'Saturnus', distance: 680, size: 65, period: 10759 },
+  { id: 'uranus', label: 'Uranus', distance: 800, size: 45, period: 30687 },
+  { id: 'neptune', label: 'Neptunus', distance: 920, size: 40, period: 60190 }
+]
+
+onMounted(() => {
+  planets.forEach((planet) => {
+    const duration = Math.pow(planet.period / EARTH_PERIOD, 0.5) * BASE_SPEED
+
+    gsap.to(`#orbit-${planet.id}`, {
+      rotation: 360,
+      duration: duration,
+      repeat: -1,
+      ease: "none"
+    })
+
+    gsap.to(`#wrapper-${planet.id}`, {
+      rotation: -360,
+      duration: duration,
+      repeat: -1,
+      ease: "none"
+    })
+  })
+})
+</script>
+
+<style scoped>
+.universe {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.sun-asset {
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  z-index: 10;
+  filter: drop-shadow(0 0 40px rgba(251, 191, 36, 0.5));
+}
+
+.orbit-path {
+  position: absolute;
+  border: 1px dashed rgba(51, 65, 85, 0.5); 
+  border-radius: 50%;
+}
+
+.orbit-container {
+  position: absolute;
+  border-radius: 50%;
+  display: flex;
+  justify-content: flex-end; 
+  align-items: center;
+  pointer-events: none; /* Cegah orbit besar menutupi klik */
+}
+
+.planet-wrapper {
+  position: relative;
+  transform: translateX(50%); 
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 20;
+  pointer-events: auto; /* Izinkan klik khusus di planet */
+}
+
+.clickable-earth {
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+.clickable-earth:hover {
+  transform: translateX(50%) scale(1.3);
+}
+.clickable-earth .planet-label {
+  color: #60a5fa; 
+  border: 1px solid #60a5fa;
+}
+
+.planet-label {
+  margin-top: 8px;
+  color: #94a3b8;
+  font-family: monospace;
+  font-size: 10px;
+  background: rgba(0,0,0,0.7);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.hint {
+  position: absolute;
+  bottom: 30px;
+  color: #64748b;
+  font-family: monospace;
+  font-size: 14px;
+  z-index: 100;
+  background-color: rgba(2, 6, 23, 0.8);
+  padding: 8px 16px;
+  border-radius: 8px;
+}
+</style>
