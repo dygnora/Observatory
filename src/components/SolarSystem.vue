@@ -180,6 +180,10 @@ onMounted(() => {
 }
 
 .planet-label {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
   margin-top: 8px;
   color: #94a3b8;
   font-family: monospace;
@@ -187,6 +191,14 @@ onMounted(() => {
   background: rgba(0,0,0,0.7);
   padding: 2px 6px;
   border-radius: 4px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.planet-wrapper:hover .planet-label {
+  opacity: 1;
 }
 
 .hint {
