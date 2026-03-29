@@ -1,7 +1,9 @@
 <template>
   <div class="universe">
     
-    <img src="../assets/sun.svg" alt="Matahari" class="sun-asset" />
+    <!-- Wrapper utama tata surya untuk efek zoom kamera -->
+    <div class="solar-system" id="solar-system">
+      <img src="../assets/sun.svg" alt="Matahari" class="sun-asset" />
 
     <template v-for="planet in planets" :key="planet.id">
       
@@ -42,6 +44,7 @@
       </div>
 
     </template>
+    </div> <!-- tutup solar-system -->
 
     <div class="hint">[ KLIK BUMI UNTUK MASUK KE SIMULASI ]</div>
   </div>
@@ -62,32 +65,49 @@ const getImageUrl = (name) => {
 // INI FUNGSI YANG HILANG SEBELUMNYA
 const handlePlanetClick = (planetId) => {
   if (planetId === 'earth') {
-    // Hentikan animasi rotasi Bumi dan Bulan agar menghemat resource komputasi saat scaling
+    // 1. Hentikan rotasi agar bumi berhenti di posisi saat ini
     gsap.killTweensOf('#orbit-earth, #wrapper-earth, #orbit-moon, #wrapper-moon')
 
-    // Hapus transisi dan class hover agar tidak bentrok dan memaksa rendering ulang CSS
+    // 2. Cegah interaksi hover CSS
     const earthWrapper = document.getElementById('wrapper-earth')
     if (earthWrapper) {
-      earthWrapper.style.transition = 'none'
       earthWrapper.classList.remove('clickable-earth')
+      earthWrapper.style.transition = 'none'
     }
 
-    // OPTIMASI: Sembunyikan properti CSS yang sangat berat dirender ketika discale ratusan kali
-    gsap.set('.moon-orbit-path', { display: 'none' }) // dashed border
-    gsap.set('.moon-asset', { filter: 'none' })      // drop-shadow
+    // 3. Kalkulasi pergerakan kamera (Pan & Zoom)
+    const sSystem = document.getElementById('solar-system')
+    const ssRect = sSystem.getBoundingClientRect()
+    const ssCx = ssRect.left + ssRect.width / 2
+    const ssCy = ssRect.top + ssRect.height / 2
 
-    // Posisikan Bumi di atas & beri will-change agar browser merender lewat texture GPU
-    gsap.set('#wrapper-earth', { zIndex: 9999, willChange: 'transform' })
+    const eRect = earthWrapper.getBoundingClientRect()
+    const px = eRect.left + eRect.width / 2
+    const py = eRect.top + eRect.height / 2
 
-    // Animasikan Bumi membesar drastis (Zoom in)
-    gsap.to('#wrapper-earth', {
-      scale: 100,
+    const S = 35; // Skala zoom kamera
+    const tx = (ssCx - px) * S;
+    const ty = (ssCy - py) * S;
+
+    // 4. OPTIMASI GPU: Hindari perhitungan ulang dashed-border saat scaling raksasa
+    // Kita ubah border jadi solid sementara zoom berlangsung, bentuk akan sama namun performa jauh lebih enteng
+    gsap.set('.orbit-path, .moon-orbit-path', { borderStyle: 'solid' })
+    gsap.set('.moon-asset', { filter: 'none' })
+
+    // Posisikan simulasi & siapkan hardware acceleration
+    gsap.set('#solar-system', { zIndex: 9999, willChange: 'transform' })
+
+    // 5. Animasikan MATA KAMERA mendekati Bumi
+    gsap.to('#solar-system', {
+      x: tx,
+      y: ty,
+      scale: S,
       duration: 1.5,
       ease: 'power2.inOut',
-      force3D: true // Paksa akselerasi GPU
+      force3D: true
     })
 
-    // Pudarkan elemen tata surya yang lainnya dengan durasi lebih cepat
+    // 6. Pudarkan elemen selain Bumi agar efek masuk atmosfer lebih terasa
     gsap.to('.orbit-path, .orbit-container:not(#orbit-earth), .sun-asset, .hint, .moon-system', {
       opacity: 0,
       duration: 0.8,
@@ -166,6 +186,18 @@ onMounted(() => {
   justify-content: center;
   align-items: center;
   overflow: hidden;
+}
+
+.solar-system {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transform-origin: center center;
 }
 
 .sun-asset {
