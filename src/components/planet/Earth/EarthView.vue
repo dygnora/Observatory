@@ -23,19 +23,19 @@
       <div class="controls">
         <div class="control-group">
           <label>DISTANCE FROM SUN <span>{{ planetState.distance }}</span></label>
-          <input type="range" v-model="store.distance" min="0" max="100" class="slider">
+          <input type="range" v-model.number="store.distance" min="0" max="100" class="slider">
           <div class="slider-labels"><span>Near</span><span>Far</span></div>
         </div>
 
         <div class="control-group">
           <label>WATER LEVEL <span>{{ planetState.waterLevel }}</span></label>
-          <input type="range" v-model="store.waterLevel" min="0" max="100" class="slider">
+          <input type="range" v-model.number="store.waterLevel" min="0" max="100" class="slider">
           <div class="slider-labels"><span>Dry</span><span>Oceanic</span></div>
         </div>
 
         <div class="control-group">
           <label>ATMOSPHERE <span>{{ planetState.atmosphereLevel }}</span></label>
-          <input type="range" v-model="store.atmosphereLevel" min="0" max="100" class="slider">
+          <input type="range" v-model.number="store.atmosphereLevel" min="0" max="100" class="slider">
           <div class="slider-labels"><span>Thin</span><span>Thick</span></div>
         </div>
       </div>
