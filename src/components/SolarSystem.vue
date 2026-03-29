@@ -94,7 +94,7 @@ const handlePlanetClick = (planetId) => {
     gsap.set('.orbit-path, .moon-orbit-path', { borderStyle: 'solid' })
     gsap.set('.moon-asset, .sun-asset', { filter: 'none' })
 
-    // Posisikan simulasi & siapkan rendering
+    // Posisikan simulasi
     gsap.set('#solar-system', { zIndex: 9999 })
 
     // 5. Animasikan MATA KAMERA mendekati Bumi
@@ -107,11 +107,16 @@ const handlePlanetClick = (planetId) => {
       force3D: false
     })
 
-    // 6. Pudarkan elemen selain Bumi agar efek masuk atmosfer lebih terasa
+    // 6. Pudarkan elemen selain Bumi SANGAT CEPAT (0.2s) dan HILANGKAN!
+    // Meringankan beban CPU dari me-rasterisasi elemen-elemen ini saat kamera zoom-in
     gsap.to('.orbit-path, .orbit-container:not(#orbit-earth), .sun-asset, .hint, .moon-system', {
       opacity: 0,
-      duration: 0.8,
-      ease: 'power2.inOut'
+      duration: 0.2,
+      ease: 'power2.inOut',
+      onComplete: () => {
+        // Bebaskan CPU sepenuhnya
+        gsap.set('.orbit-path, .orbit-container:not(#orbit-earth), .sun-asset, .moon-system', { display: 'none' })
+      }
     })
 
     // Pindah ke simulator setelah animasi zoom hampir selesai
@@ -222,6 +227,7 @@ onMounted(() => {
   justify-content: flex-end; 
   align-items: center;
   pointer-events: none; /* Cegah orbit besar menutupi klik */
+  will-change: transform; /* Optimasi GPU layer untuk mencegah idle lag */
 }
 
 .planet-wrapper {
@@ -232,6 +238,7 @@ onMounted(() => {
   align-items: center;
   z-index: 20;
   pointer-events: auto; /* Izinkan klik khusus di planet */
+  will-change: transform; /* Optimasi GPU layer untuk mencegah idle lag */
 }
 
 .clickable-earth {
@@ -297,7 +304,8 @@ onMounted(() => {
   left: 0;
   width: 100%;
   height: 100%;
-  border: 1px dashed rgba(148, 163, 184, 0.4);
+  /* BORDER DASHED YANG BERPUTAR ADALAH PENYEBAB IDLE LAG! Kita jadikan solid tipis */
+  border: 1px solid rgba(148, 163, 184, 0.2);
   border-radius: 50%;
 }
 
@@ -324,6 +332,8 @@ onMounted(() => {
 .moon-asset {
   width: 8px;
   height: 8px;
-  filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.3));
+  /* DROP-SHADOW PADA ELEMEN YANG BERPUTAR SANGAT MEMBEBANI GPU! Kita ganti dengan statis */
+  border-radius: 50%;
+  box-shadow: 0 0 4px rgba(255, 255, 255, 0.4);
 }
 </style>
