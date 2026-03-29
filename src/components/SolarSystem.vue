@@ -28,7 +28,7 @@
             <div v-if="planet.id === 'earth'" class="moon-system">
               <div class="moon-orbit-path"></div>
               <div class="moon-orbit-container" id="orbit-moon">
-                <div class="moon-wrapper" id="wrapper-moon" style="transform: translateX(40px)">
+                <div class="moon-wrapper" id="wrapper-moon">
                   <img :src="celestialAssets.moon.base" alt="Bulan" class="moon-asset" />
                 </div>
               </div>
