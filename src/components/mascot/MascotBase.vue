@@ -1,5 +1,5 @@
 <template>
-  <img src="../../../assets/mascot/sprites/idle.png" alt="Mascot" class="mascot-base" />
+  <img src="../../../assets/mascot/base/idle.png" alt="Mascot" class="mascot-base" />
 </template>
 
 <style scoped>

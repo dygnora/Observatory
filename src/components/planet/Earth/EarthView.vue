@@ -56,6 +56,7 @@
 import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useSimulationStore } from '../../../stores/simulation'
+import { HEAT } from '../../../constants/planetState'
 import PlanetBase from '../PlanetBase.vue'
 import PlanetLayers from '../layers/PlanetLayers.vue'
 import MascotLayers from '../../mascot/MascotLayers.vue'
@@ -64,8 +65,8 @@ const store = useSimulationStore()
 const { planetState } = storeToRefs(store)
 
 const tempColor = computed(() => {
-  if (planetState.value.heatLevel === 3) return 'text-red'
-  if (planetState.value.heatLevel === 0) return 'text-blue'
+  if (planetState.value.heatLevel === HEAT.EXTREME) return 'text-red'
+  if (planetState.value.heatLevel === HEAT.COLD) return 'text-blue'
   return 'text-green'
 })
 </script>

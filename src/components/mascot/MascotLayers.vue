@@ -1,26 +1,20 @@
 <template>
   <div class="mascot-layer-container">
     <MascotBase />
-    <div v-if="stateConfig.showFire(planetState)" class="mascot-effect fire-effect"></div>
-    <div v-if="stateConfig.showSweat(planetState)" class="mascot-effect sweat-effect"></div>
-    <div v-if="stateConfig.showBlush(planetState)" class="mascot-effect blush-effect"></div>
+    <div v-if="mascotConfig.showFire(planetState)" class="mascot-effect fire-effect"></div>
+    <div v-if="mascotConfig.showSweat(planetState)" class="mascot-effect sweat-effect"></div>
+    <div v-if="mascotConfig.showBlush(planetState)" class="mascot-effect blush-effect"></div>
   </div>
 </template>
 
 <script setup>
 import { storeToRefs } from 'pinia'
 import { useSimulationStore } from '../../stores/simulation'
+import { mascotConfig } from '../planet/config/layerConfig'
 import MascotBase from './MascotBase.vue'
 
 const store = useSimulationStore()
 const { planetState } = storeToRefs(store)
-
-// Centralized Layer Rule config for MASCOT
-const stateConfig = {
-  showBlush: (state) => state.heatLevel === 0,
-  showSweat: (state) => state.heatLevel === 2,
-  showFire: (state) => state.heatLevel === 3
-}
 </script>
 
 <style scoped>

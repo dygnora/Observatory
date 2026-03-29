@@ -28,6 +28,7 @@
 import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useSimulationStore } from '../../../stores/simulation'
+import { layerConfig } from '../config/layerConfig'
 import PlanetIceLayer from './PlanetIceLayer.vue'
 import PlanetHeatLayer from './PlanetHeatLayer.vue'
 import PlanetWaterLayer from './PlanetWaterLayer.vue'
@@ -39,10 +40,6 @@ const props = defineProps({
 
 const store = useSimulationStore()
 const { planetState } = storeToRefs(store)
-
-const layerConfig = {
-  atmosphere: (state) => state.atmosphereLevel > 0
-}
 
 // Progressive Intensity Mappings (0.0 to 1.0)
 const progressive = computed(() => {
