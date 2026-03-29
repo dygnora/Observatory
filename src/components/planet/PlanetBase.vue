@@ -4,13 +4,17 @@
 
 <script setup>
 import { computed } from 'vue'
-import { planetAssets } from '../../assets/map/planetAssets'
+import { getAsset } from '../../assets/assetLoader'
+import { PLANET_CONFIG } from './config/planetConfig'
 
 const props = defineProps({
   planet: { type: String, required: true }
 })
 
-const asset = computed(() => planetAssets[props.planet]?.base)
+const asset = computed(() => {
+  const domain = PLANET_CONFIG[props.planet]?.domain || 'planets'
+  return getAsset({ domain, name: props.planet, file: 'base.svg' })
+})
 </script>
 
 <style scoped>

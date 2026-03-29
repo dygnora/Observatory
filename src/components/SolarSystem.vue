@@ -1,121 +1,78 @@
 <template>
   <div class="universe">
     
-    <!-- Wrapper utama tata surya untuk efek zoom kamera -->
-    <div class="solar-system" id="solar-system">
-      <img :src="celestialAssets.sun.base" alt="Matahari" class="sun-asset" />
+    <div class="solar-system" ref="solarSystemRef">
+      <!-- Sun Asset explicitly bound -->
+      <img :src="getAsset({domain:'stars', name:'sun', file:'base.svg'})" alt="Matahari" class="sun-asset" ref="sunAssetRef" />
 
-    <template v-for="planet in planets" :key="planet.id">
-      
-      <div class="orbit-path" :style="{ width: planet.distance + 'px', height: planet.distance + 'px' }"></div>
+      <template v-for="planet in planets" :key="planet.id">
+        
+        <div class="orbit-path" :style="{ width: planet.distance + 'px', height: planet.distance + 'px' }" ref="orbitPathRefs" :data-id="planet.id"></div>
 
-      <div 
-        class="orbit-container" 
-        :id="'orbit-' + planet.id"
-        :style="{ width: planet.distance + 'px', height: planet.distance + 'px' }"
-      >
         <div 
-          class="planet-wrapper" 
-          :id="'wrapper-' + planet.id"
-          @click="handlePlanetClick(planet.id)"
-          :class="{ 'clickable-earth': planet.id === 'earth' }"
+          class="orbit-container" 
+          :style="{ width: planet.distance + 'px', height: planet.distance + 'px' }"
+          ref="orbitContainerRefs"
+          :data-id="planet.id"
         >
-          <img :src="planetAssets[planet.id]?.base" :alt="planet.label" class="planet-asset" :style="{ width: planet.size + 'px', height: planet.size + 'px' }" />
-            
-            <span class="planet-label">{{ planet.label.toUpperCase() }}</span>
+          <div 
+            class="planet-wrapper" 
+            @click="handlePlanetClick(planet.id)"
+            :class="{ 'clickable-earth': planet.id === 'earth' }"
+            ref="planetWrapperRefs"
+            :data-id="planet.id"
+          >
+            <!-- Planet Asset explicitly bound -->
+            <img :src="getAsset({domain:'planets', name:planet.id, file:'base.svg'})" :alt="planet.label" class="planet-asset" :style="{ width: planet.size + 'px', height: planet.size + 'px' }" ref="planetAssetRefs" />
+              
+              <span class="planet-label">{{ planet.label.toUpperCase() }}</span>
 
-            <!-- Satelit Bumi (Bulan) -->
-            <div v-if="planet.id === 'earth'" class="moon-system">
-              <div class="moon-orbit-path"></div>
-              <div class="moon-orbit-container" id="orbit-moon">
-                <div class="moon-wrapper" id="wrapper-moon">
-                  <img :src="celestialAssets.moon.base" alt="Bulan" class="moon-asset" />
+              <!-- Moon System explicitly bound -->
+              <div v-if="planet.id === 'earth'" class="moon-system" ref="moonSystemRefs">
+                <div class="moon-orbit-path" ref="moonOrbitPathRefs"></div>
+                <div class="moon-orbit-container" ref="moonOrbitRefs">
+                  <div class="moon-wrapper" ref="moonWrapperRefs">
+                    <img :src="getAsset({domain:'satellites', name:'moon', file:'base.svg'})" alt="Bulan" class="moon-asset" ref="moonAssetRefs" />
+                  </div>
                 </div>
               </div>
-            </div>
+          </div>
         </div>
-      </div>
 
-    </template>
+      </template>
     </div> <!-- tutup solar-system -->
 
-    <div class="hint">[ KLIK BUMI UNTUK MASUK KE SIMULASI ]</div>
+    <div class="hint" ref="hintRef">[ KLIK BUMI UNTUK MASUK KE SIMULASI ]</div>
   </div>
 </template>
 
 <script setup>
-import { onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
 import gsap from 'gsap'
 import { useSimulationStore } from '../stores/simulation'
-import { planetAssets, celestialAssets } from '../assets/map/planetAssets'
+import { getAsset } from '../assets/assetLoader'
 
 const store = useSimulationStore()
 
-// INI FUNGSI YANG HILANG SEBELUMNYA
-const handlePlanetClick = (planetId) => {
-  if (planetId === 'earth') {
-    // 1. Hentikan rotasi agar planet berhenti di posisi saat ini
-    gsap.killTweensOf('#orbit-earth, #wrapper-earth, #orbit-moon, #wrapper-moon')
+// 1. DOM Refs for strictly scoping GSAP
+const solarSystemRef = ref(null)
+const sunAssetRef = ref(null)
+const hintRef = ref(null)
 
-    // 2. Cegah interaksi hover CSS
-    const earthWrapper = document.getElementById('wrapper-earth')
-    if (earthWrapper) {
-      earthWrapper.classList.remove('clickable-earth')
-      earthWrapper.style.transition = 'none'
-    }
+const orbitPathRefs = ref([])
+const orbitContainerRefs = ref([])
+const planetWrapperRefs = ref([])
+const planetAssetRefs = ref([])
 
-    // 3. Cari titik pusat Bumi sebagai poros/fokus kamera
-    const sSystem = document.getElementById('solar-system')
-    const ssRect = sSystem.getBoundingClientRect()
-    
-    const eRect = earthWrapper.getBoundingClientRect()
-    // Titik kamera sejajar dengan pusat bumi (dikurangi posisi offset container tata surya)
-    const originX = (eRect.left + eRect.width / 2) - ssRect.left;
-    const originY = (eRect.top + eRect.height / 2) - ssRect.top;
-
-    // 4. OPTIMASI GPU: Hindari perhitungan ulang dashed-border tebal saat scaling raksasa
-    gsap.set('.orbit-path, .moon-orbit-path', { borderStyle: 'solid' })
-    gsap.set('.moon-asset, .sun-asset', { filter: 'none' })
-
-    // Memastikan fokus zoom TEPAT pada koordinat planet sasaran (Bumi)
-    gsap.set('#solar-system', { 
-      transformOrigin: `${originX}px ${originY}px`,
-      zIndex: 9999 
-    })
-
-    // 5. Lakukan zoom MURNI (optic-like zoom) sejauh mungkin agar layar penuh Bumi
-    gsap.to('#solar-system', {
-      scale: 100, // Zoom raksasa, proporsional dengan viewport
-      duration: 1.5,
-      ease: 'power2.inOut',
-      force3D: false
-    })
-
-    // 6. Pudarkan elemen selain Bumi SANGAT CEPAT (0.2s) dan HILANGKAN!
-    // Meringankan beban CPU dari me-rasterisasi elemen-elemen ini saat kamera zoom-in
-    gsap.to('.orbit-path, .orbit-container:not(#orbit-earth), .sun-asset, .hint, .moon-system', {
-      opacity: 0,
-      duration: 0.2,
-      ease: 'power2.inOut',
-      onComplete: () => {
-        // Bebaskan CPU sepenuhnya
-        gsap.set('.orbit-path, .orbit-container:not(#orbit-earth), .sun-asset, .moon-system', { display: 'none' })
-      }
-    })
-
-    // Pindah ke simulator setelah animasi zoom hampir selesai
-    setTimeout(() => {
-      store.currentView = 'earth'
-    }, 1200)
-  } else {
-    console.log(`Simulasi untuk ${planetId} belum tersedia.`)
-  }
-}
+const moonSystemRefs = ref([])
+const moonOrbitPathRefs = ref([])
+const moonOrbitRefs = ref([])
+const moonWrapperRefs = ref([])
+const moonAssetRefs = ref([])
 
 const EARTH_PERIOD = 365
 const BASE_SPEED = 15
 
-// Data planet: 'id' untuk nama file, 'label' untuk teks tampilan
 const planets = [
   { id: 'mercury', label: 'Merkurius', distance: 140, size: 20, period: 88 },
   { id: 'venus', label: 'Venus', distance: 220, size: 30, period: 225 },
@@ -127,47 +84,116 @@ const planets = [
   { id: 'neptune', label: 'Neptunus', distance: 920, size: 40, period: 60190 }
 ]
 
+const handlePlanetClick = (planetId) => {
+  if (planetId === 'earth') {
+    // 1. Find the accurate DOM node explicitly using data-id since Vue ref arrays do not guarantee order
+    const earthOrbitContainer = orbitContainerRefs.value.find(el => el.dataset.id === 'earth')
+    const earthWrapper = planetWrapperRefs.value.find(el => el.dataset.id === 'earth')
+    
+    const moonOrbit = moonOrbitRefs.value[0]
+    const moonWrapper = moonWrapperRefs.value[0]
+    const moonSys = moonSystemRefs.value[0]
+    const moonPath = moonOrbitPathRefs.value[0]
+    const moonAsset = moonAssetRefs.value[0]
+    
+    // 2. Explicitly clear tweens using Refs (No String Collisions)
+    gsap.killTweensOf([earthOrbitContainer, earthWrapper, moonOrbit, moonWrapper])
+    
+    if (earthWrapper) {
+      earthWrapper.classList.remove('clickable-earth')
+      earthWrapper.style.transition = 'none'
+    }
+
+    // 3. Calculation offsets based strictly on physical refs
+    const ssRect = solarSystemRef.value.getBoundingClientRect()
+    const eRect = earthWrapper.getBoundingClientRect()
+    const originX = (eRect.left + eRect.width / 2) - ssRect.left;
+    const originY = (eRect.top + eRect.height / 2) - ssRect.top;
+
+    // 4. GPU Optimizations
+    gsap.set([orbitPathRefs.value, moonPath], { borderStyle: 'solid' })
+    gsap.set([moonAsset, sunAssetRef.value], { filter: 'none' })
+
+    gsap.set(solarSystemRef.value, { 
+      transformOrigin: `${originX}px ${originY}px`,
+      zIndex: 9999 
+    })
+
+    // 5. Zoom Camera
+    gsap.to(solarSystemRef.value, {
+      scale: 100, 
+      duration: 1.5,
+      ease: 'power2.inOut',
+      force3D: false
+    })
+
+    // 6. Fade out unfocused layers safely
+    const nonEarthOrbits = orbitContainerRefs.value.filter(el => el.dataset.id !== 'earth')
+    const fadeTargets = [orbitPathRefs.value, nonEarthOrbits, sunAssetRef.value, hintRef.value, moonSys]
+    
+    gsap.to(fadeTargets, {
+      opacity: 0,
+      duration: 0.2,
+      ease: 'power2.inOut',
+      onComplete: () => {
+        gsap.set([orbitPathRefs.value, nonEarthOrbits, sunAssetRef.value, moonSys], { display: 'none' })
+      }
+    })
+
+    setTimeout(() => {
+      store.currentView = 'earth'
+    }, 1200)
+  } else {
+    console.log(`Simulasi untuk ${planetId} belum tersedia.`)
+  }
+}
+
 onMounted(() => {
+  // GSAP 100% Driven via Data Attribute Lookups inside Array Refs
   planets.forEach((planet) => {
     const duration = Math.pow(planet.period / EARTH_PERIOD, 0.5) * BASE_SPEED
 
-    gsap.to(`#orbit-${planet.id}`, {
+    const orbitContainer = orbitContainerRefs.value.find(el => el.dataset.id === planet.id)
+    const wrapper = planetWrapperRefs.value.find(el => el.dataset.id === planet.id)
+
+    if (orbitContainer) {
+      gsap.to(orbitContainer, {
+        rotation: 360,
+        duration: duration,
+        repeat: -1,
+        ease: "none"
+      })
+    }
+
+    if (wrapper) {
+      gsap.to(wrapper, {
+        rotation: -360,
+        duration: duration,
+        repeat: -1,
+        ease: "none"
+      })
+    }
+  })
+
+  // Planet spinning on axis safely
+  gsap.to(planetAssetRefs.value, {
+    rotation: 360,
+    duration: 20,
+    repeat: -1,
+    ease: "none"
+  })
+
+  // Moon orbit explicitly hooked
+  if (moonOrbitRefs.value?.length > 0) {
+    const moonDuration = Math.pow(27.3 / 365, 0.5) * BASE_SPEED;
+    gsap.to(moonOrbitRefs.value[0], {
       rotation: 360,
-      duration: duration,
+      duration: moonDuration,
       repeat: -1,
       ease: "none"
     })
+  }
 
-    gsap.to(`#wrapper-${planet.id}`, {
-      rotation: -360,     // Counter-revolution keeps planet "upright" relative to screen
-      duration: duration,
-      repeat: -1,
-      ease: "none"
-    })
-  })
-
-  // 3. Planet ROTATION (Berputar pada porosnya sendiri secara realistis)
-  gsap.to('.planet-asset', {
-    rotation: 360,
-    duration: 20, // Kecepatan rotasi konstan
-    repeat: -1,
-    ease: "none"
-  })
-
-  // 4. Animasikan satelit (Bulan) mengelilingi bumi
-  // Periode bulan sekitar 27 hari
-  const moonDuration = Math.pow(27.3 / 365, 0.5) * BASE_SPEED;
-
-  gsap.to('#orbit-moon', {
-    rotation: 360,
-    duration: moonDuration,
-    repeat: -1,
-    ease: "none"
-  })
-
-  // Bulan "Tidally Locked" di kehidupan nyata (wajah yang sama selalu menghadap Bumi).
-  // Karena orbitnya sudah berputar dan kita tidak menambahkan `counter-rotation` (-360) 
-  // pada `#wrapper-moon`, Bulan secara alami akan selalu mengunci wajah kirinya menghadap Bumi!
 })
 </script>
 
@@ -206,7 +232,7 @@ onMounted(() => {
   position: absolute;
   border: 1px dashed rgba(51, 65, 85, 0.5); 
   border-radius: 50%;
-  pointer-events: none; /* Izinkan pointer tembus ke Bumi */
+  pointer-events: none;
 }
 
 .orbit-container {
@@ -215,8 +241,8 @@ onMounted(() => {
   display: flex;
   justify-content: flex-end; 
   align-items: center;
-  pointer-events: none; /* Cegah orbit besar menutupi klik */
-  will-change: transform; /* Optimasi GPU layer untuk mencegah idle lag */
+  pointer-events: none;
+  will-change: transform;
 }
 
 .planet-wrapper {
@@ -226,8 +252,8 @@ onMounted(() => {
   flex-direction: column;
   align-items: center;
   z-index: 20;
-  pointer-events: auto; /* Izinkan klik khusus di planet */
-  will-change: transform; /* Optimasi GPU layer untuk mencegah idle lag */
+  pointer-events: auto;
+  will-change: transform;
 }
 
 .clickable-earth {
@@ -240,6 +266,12 @@ onMounted(() => {
 .clickable-earth .planet-label {
   color: #60a5fa; 
   border: 1px solid #60a5fa;
+}
+
+.planet-asset {
+  width: 100%;
+  height: 100%;
+  z-index: 5;
 }
 
 .planet-label {
@@ -280,7 +312,7 @@ onMounted(() => {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 80px;  /* Orbit diameter (40px radius) menyisakan jarak realistis dari Bumi 35px */
+  width: 80px; 
   height: 80px;
   transform: translate(-50%, -50%);
   pointer-events: none;
@@ -293,7 +325,6 @@ onMounted(() => {
   left: 0;
   width: 100%;
   height: 100%;
-  /* BORDER DASHED YANG BERPUTAR ADALAH PENYEBAB IDLE LAG! Kita jadikan solid tipis */
   border: 1px solid rgba(148, 163, 184, 0.2);
   border-radius: 50%;
 }
@@ -312,7 +343,6 @@ onMounted(() => {
 
 .moon-wrapper {
   position: relative;
-  transform: translateX(50%);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -321,8 +351,6 @@ onMounted(() => {
 .moon-asset {
   width: 8px;
   height: 8px;
-  /* DROP-SHADOW PADA ELEMEN YANG BERPUTAR SANGAT MEMBEBANI GPU! Kita ganti dengan statis */
   border-radius: 50%;
-  box-shadow: 0 0 4px rgba(255, 255, 255, 0.4);
 }
 </style>

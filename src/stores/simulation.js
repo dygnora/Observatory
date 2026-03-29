@@ -6,9 +6,18 @@ export const useSimulationStore = defineStore('simulation', {
     currentView: 'solar', 
     distance: 50,      
     waterLevel: 50,    
-    atmosphereLevel: 50 
+    atmosphereLevel: 50,
+    isLowDevice: false // Handled structurally by explicit action hook
   }),
   
+  actions: {
+    initDeviceProfile() {
+      // Degrades CSS rendering on browsers running 4 threads or fewer to maintain FPS target
+      this.isLowDevice = navigator.hardwareConcurrency <= 4
+      console.log(`[Simulation] Device CPU Cores: ${navigator.hardwareConcurrency} | Low Device Mode: ${this.isLowDevice}`)
+    }
+  },
+
   getters: {
     temperature(state) {
       const baseTemp = 15; 
