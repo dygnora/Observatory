@@ -56,8 +56,10 @@ const maskStyle = computed(() => ({
   left: 0;
 }
 .flood-tint {
-  backdrop-filter: sepia(1) hue-rotate(200deg) saturate(3) brightness(0.8);
-  background: radial-gradient(circle, rgba(0,105,148,0.2) 40%, rgba(0,0,128,0.5) 100%);
+  /* OCEANIC REPLICATION: Deeper blues, specular highlights, and 3D wet sphere illusion */
+  backdrop-filter: sepia(0.8) hue-rotate(195deg) saturate(3) brightness(1.1) contrast(1.1);
+  background: radial-gradient(circle at 30% 30%, rgba(0, 255, 255, 0.4) 0%, rgba(0, 119, 190, 0.6) 50%, rgba(0, 20, 60, 0.9) 100%);
+  box-shadow: inset -25px -25px 50px rgba(0, 0, 40, 0.8), inset 10px 10px 30px rgba(150, 230, 255, 0.5);
 }
 .dry-tint {
   backdrop-filter: sepia(1) hue-rotate(10deg) saturate(2) brightness(0.9);
