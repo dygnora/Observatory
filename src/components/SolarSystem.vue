@@ -75,33 +75,28 @@ const handlePlanetClick = (planetId) => {
       earthWrapper.style.transition = 'none'
     }
 
-    // 3. Kalkulasi pergerakan kamera (Pan & Zoom)
+    // 3. Cari titik pusat Bumi sebagai poros/fokus kamera
     const sSystem = document.getElementById('solar-system')
     const ssRect = sSystem.getBoundingClientRect()
-    const ssCx = ssRect.left + ssRect.width / 2
-    const ssCy = ssRect.top + ssRect.height / 2
-
+    
     const eRect = earthWrapper.getBoundingClientRect()
-    const px = eRect.left + eRect.width / 2
-    const py = eRect.top + eRect.height / 2
+    // Titik kamera sejajar dengan pusat bumi (dikurangi posisi offset container tata surya)
+    const originX = (eRect.left + eRect.width / 2) - ssRect.left;
+    const originY = (eRect.top + eRect.height / 2) - ssRect.top;
 
-    const S = 35; // Skala zoom kamera
-    const tx = (ssCx - px) * S;
-    const ty = (ssCy - py) * S;
-
-    // 4. OPTIMASI GPU: Hindari perhitungan ulang dashed-border saat scaling raksasa
-    // Kita ubah border jadi solid sementara zoom berlangsung, bentuk akan sama namun performa jauh lebih enteng
+    // 4. OPTIMASI GPU: Hindari perhitungan ulang dashed-border tebal saat scaling raksasa
     gsap.set('.orbit-path, .moon-orbit-path', { borderStyle: 'solid' })
     gsap.set('.moon-asset, .sun-asset', { filter: 'none' })
 
-    // Posisikan simulasi
-    gsap.set('#solar-system', { zIndex: 9999 })
+    // Memastikan fokus zoom TEPAT pada koordinat planet sasaran (Bumi)
+    gsap.set('#solar-system', { 
+      transformOrigin: `${originX}px ${originY}px`,
+      zIndex: 9999 
+    })
 
-    // 5. Animasikan MATA KAMERA mendekati Bumi
+    // 5. Lakukan zoom MURNI (optic-like zoom) sejauh mungkin agar layar penuh Bumi
     gsap.to('#solar-system', {
-      x: tx,
-      y: ty,
-      scale: S,
+      scale: 100, // Zoom raksasa, proporsional dengan viewport
       duration: 1.5,
       ease: 'power2.inOut',
       force3D: false
