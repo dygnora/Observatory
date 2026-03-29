@@ -10,7 +10,7 @@
 <script setup>
 import { useSimulationStore } from './stores/simulation'
 import SolarSystem from './components/SolarSystem.vue'
-import EarthView from './components/EarthView.vue'
+import EarthView from './components/planet/Earth/EarthView.vue'
 
 const store = useSimulationStore()
 </script>
