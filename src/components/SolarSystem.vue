@@ -92,10 +92,10 @@ const handlePlanetClick = (planetId) => {
     // 4. OPTIMASI GPU: Hindari perhitungan ulang dashed-border saat scaling raksasa
     // Kita ubah border jadi solid sementara zoom berlangsung, bentuk akan sama namun performa jauh lebih enteng
     gsap.set('.orbit-path, .moon-orbit-path', { borderStyle: 'solid' })
-    gsap.set('.moon-asset', { filter: 'none' })
+    gsap.set('.moon-asset, .sun-asset', { filter: 'none' })
 
-    // Posisikan simulasi & siapkan hardware acceleration
-    gsap.set('#solar-system', { zIndex: 9999, willChange: 'transform' })
+    // Posisikan simulasi & siapkan rendering
+    gsap.set('#solar-system', { zIndex: 9999 })
 
     // 5. Animasikan MATA KAMERA mendekati Bumi
     gsap.to('#solar-system', {
@@ -104,7 +104,7 @@ const handlePlanetClick = (planetId) => {
       scale: S,
       duration: 1.5,
       ease: 'power2.inOut',
-      force3D: true
+      force3D: false
     })
 
     // 6. Pudarkan elemen selain Bumi agar efek masuk atmosfer lebih terasa
