@@ -62,31 +62,35 @@ const getImageUrl = (name) => {
 // INI FUNGSI YANG HILANG SEBELUMNYA
 const handlePlanetClick = (planetId) => {
   if (planetId === 'earth') {
-    // Hentikan animasi rotasi Bumi agar berhenti bergerak
-    gsap.killTweensOf('#orbit-earth')
-    gsap.killTweensOf('#wrapper-earth')
+    // Hentikan animasi rotasi Bumi dan Bulan agar menghemat resource komputasi saat scaling
+    gsap.killTweensOf('#orbit-earth, #wrapper-earth, #orbit-moon, #wrapper-moon')
 
-    // Hapus class atau atur transition ke none agar tidak bentrok dengan GSAP (penyebab lag utama)
+    // Hapus transisi dan class hover agar tidak bentrok dan memaksa rendering ulang CSS
     const earthWrapper = document.getElementById('wrapper-earth')
     if (earthWrapper) {
       earthWrapper.style.transition = 'none'
+      earthWrapper.classList.remove('clickable-earth')
     }
 
-    // Posisikan Bumi di depan lapisan orbit lain
-    gsap.set('#wrapper-earth', { zIndex: 9999 })
+    // OPTIMASI: Sembunyikan properti CSS yang sangat berat dirender ketika discale ratusan kali
+    gsap.set('.moon-orbit-path', { display: 'none' }) // dashed border
+    gsap.set('.moon-asset', { filter: 'none' })      // drop-shadow
+
+    // Posisikan Bumi di atas & beri will-change agar browser merender lewat texture GPU
+    gsap.set('#wrapper-earth', { zIndex: 9999, willChange: 'transform' })
 
     // Animasikan Bumi membesar drastis (Zoom in)
     gsap.to('#wrapper-earth', {
       scale: 100,
       duration: 1.5,
       ease: 'power2.inOut',
-      force3D: true // Paksa akselerasi GPU agar tidak lag
+      force3D: true // Paksa akselerasi GPU
     })
 
-    // Pudarkan elemen tata surya yang lainnya, termasuk sistem bulan
+    // Pudarkan elemen tata surya yang lainnya dengan durasi lebih cepat
     gsap.to('.orbit-path, .orbit-container:not(#orbit-earth), .sun-asset, .hint, .moon-system', {
       opacity: 0,
-      duration: 1,
+      duration: 0.8,
       ease: 'power2.inOut'
     })
 
