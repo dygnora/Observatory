@@ -24,6 +24,19 @@
             class="planet-asset"
             :style="{ width: planet.size + 'px', height: planet.size + 'px' }"
           />
+
+          <!-- Tampilkan bulan jika planet adalah Bumi -->
+          <template v-if="planet.id === 'earth'">
+            <div class="moon-system">
+              <div class="moon-orbit-path"></div>
+              <div class="moon-orbit-container" id="orbit-moon">
+                <div class="moon-wrapper" id="wrapper-moon">
+                  <img src="../assets/moon.svg" alt="Bulan" class="moon-asset" />
+                </div>
+              </div>
+            </div>
+          </template>
+
           <span class="planet-label">{{ planet.label.toUpperCase() }}</span>
         </div>
       </div>
@@ -70,8 +83,8 @@ const handlePlanetClick = (planetId) => {
       force3D: true // Paksa akselerasi GPU agar tidak lag
     })
 
-    // Pudarkan elemen tata surya yang lainnya
-    gsap.to('.orbit-path, .orbit-container:not(#orbit-earth), .sun-asset, .hint', {
+    // Pudarkan elemen tata surya yang lainnya, termasuk sistem bulan
+    gsap.to('.orbit-path, .orbit-container:not(#orbit-earth), .sun-asset, .hint, .moon-system', {
       opacity: 0,
       duration: 1,
       ease: 'power2.inOut'
@@ -118,6 +131,24 @@ onMounted(() => {
       repeat: -1,
       ease: "none"
     })
+  })
+
+  // Animasikan satelit (Bulan) mengelilingi bumi
+  // Periode bulan jauh lebih cepat (sekitar 27 hari), kita gunakan proporsi logis
+  const moonDuration = Math.pow(27.3 / 365, 0.5) * BASE_SPEED;
+
+  gsap.to('#orbit-moon', {
+    rotation: 360,
+    duration: moonDuration,
+    repeat: -1,
+    ease: "none"
+  })
+
+  gsap.to('#wrapper-moon', {
+    rotation: -360,
+    duration: moonDuration,
+    repeat: -1,
+    ease: "none"
   })
 })
 </script>
@@ -211,5 +242,52 @@ onMounted(() => {
   background-color: rgba(2, 6, 23, 0.8);
   padding: 8px 16px;
   border-radius: 8px;
+}
+
+.moon-system {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 50px;
+  height: 50px;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.moon-orbit-path {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 1px dashed rgba(148, 163, 184, 0.4);
+  border-radius: 50%;
+}
+
+.moon-orbit-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.moon-wrapper {
+  position: relative;
+  transform: translateX(50%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.moon-asset {
+  width: 8px;
+  height: 8px;
+  filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.3));
 }
 </style>
